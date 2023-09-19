@@ -2,8 +2,7 @@ on:
   push: 
     branches:
        - dev
- 
- jobs:
+jobs:
   pre-push_hook:
  
      runs-on: ubuntu-latest
