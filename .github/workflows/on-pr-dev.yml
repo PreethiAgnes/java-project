@@ -174,11 +174,8 @@ jobs:
            # Specify the desired port for ArgoCD (e.g., 8080)
           ARGOCD_PORT=8080
 
-          # Combine ngrok URL with the specified port
-          ARGOCD_URL="${NGROK_URL}:${ARGOCD_PORT}"
-
             # Combine ngrok URL with the specified port
-            ARGOCD_URL="${{ steps.ngro.outputs.url }}:$ARGOCD_PORT"
+            ARGOCD_URL="${NGROK_URL}:$ARGOCD_PORT"
             argocd login $ARGOCD_URL --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}
             shell: /usr/bin/bash -e {0}
         env:
