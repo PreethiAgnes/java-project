@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: my-app
-          image: hamritha817/github-action-maven-tutorial:tagname:latest  # Specify the Docker image reference
+          image: preethiagnes/app/:tagname:latest  # Specify the Docker image reference
           ports:
             - containerPort: 80  # Adjust the container port as needed
