@@ -162,11 +162,11 @@ jobs:
 
       - name: Display ngrok URL
         run: |
-          echo "ngrok URL: ${{ steps.ngrok.outputs.url }}"
+          echo "ngrok URL: ${{ steps.ngro.outputs.url }}"
       
       - name: Connect to ArgoCD
         run: |
-          argocd login ${{ steps.ngrok.outputs.url }} --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}
+          argocd login ${{ steps.ngro.outputs.url }} --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}
         env:
           ARGOCD_USERNAME: admin  # Replace with your ArgoCD admin username
           needs: Get ngrok URL
