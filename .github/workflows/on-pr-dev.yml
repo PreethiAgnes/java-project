@@ -135,6 +135,12 @@ jobs:
           echo "::set-output name=url::$(curl -s http://localhost:4040/api/tunnels | jq -r .tunnels[0].public_url)"
         shell: bash
 
+      - name: Install argocd CLI
+        run: |
+          curl -o /usr/local/bin/argocd -L https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          chmod +x /usr/local/bin/argocd
+        shell: bash
+
       - name: Log in to ArgoCD
         run: |
           argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}
