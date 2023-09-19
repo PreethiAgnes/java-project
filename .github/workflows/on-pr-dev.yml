@@ -145,7 +145,7 @@ jobs:
         run: |
           argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}
         env:
-          ARGOCD_SERVER: http://localhost:8080  # Replace with your ArgoCD server URL
+          ARGOCD_SERVER: localhost:8080  # Replace with your ArgoCD server URL
           ARGOCD_USERNAME: admin  # Replace with your ArgoCD admin username
 
       - name: Update ArgoCD Application URL
