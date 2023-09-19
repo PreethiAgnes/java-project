@@ -159,6 +159,10 @@ jobs:
         run: |
           sleep 5  # Wait for ngrok to start
           echo "::set-output name=url::$(curl -s http://localhost:4040/api/tunnels | jq -r .tunnels[0].public_url)"
+
+      - name: Display ngrok URL
+        run: |
+          echo "ngrok URL: ${{ steps.ngrok.outputs.url }}"
       
       - name: Connect to ArgoCD
         run: |
