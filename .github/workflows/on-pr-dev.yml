@@ -144,7 +144,7 @@ jobs:
       - name: Start ngrok
         run: |
           ngrok http 8080  # Replace 8080 with the port your ArgoCD server is running on
-          background: true
+  
       
       - name: Get ngrok URL
         id: ngro
