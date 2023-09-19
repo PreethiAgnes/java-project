@@ -137,14 +137,14 @@ jobs:
 
       - name: Log in to ArgoCD
         run: |
-          argocd login <ARGOCD_SERVER> --username <ARGOCD_USERNAME> --password ${{ secrets.ARGOCD_PASSWORD }}
+          argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}
         env:
           ARGOCD_SERVER: http://localhost:8080  # Replace with your ArgoCD server URL
           ARGOCD_USERNAME: admin  # Replace with your ArgoCD admin username
 
       - name: Update ArgoCD Application URL
         run: |
-          kubectl apply -n argocd -f argocd-app.yaml
+          kubectl apply -n argocd -f argo-cd.yaml
           argocd app set my-app-name -p targetRevision=<DEPLOYMENT_URL>
           argocd app sync my-app-name
         env:
