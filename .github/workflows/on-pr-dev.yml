@@ -165,7 +165,13 @@ jobs:
           echo "ngrok URL: ${{ steps.ngro.outputs.url }}"
       
       - name: Connect to ArgoCD
-        run: |
+        run: |        
+          MAX_ATTEMPTS=3
+          ATTEMPT=1
+          SUCCESS=false
+
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ] && [ "$SUCCESS" != "true" ]; do
+            echo "Attempt $ATTEMPT of $MAX_ATTEMPTS"
           # Remove "http://" or "https://" from ngrok URL
           NGROK_URL="${{ steps.ngro.outputs.url }}"
           NGROK_URL=${NGROK_URL#http://}
@@ -176,8 +182,14 @@ jobs:
 
             # Combine ngrok URL with the specified port
             ARGOCD_URL="${NGROK_URL}:$ARGOCD_PORT"
-            argocd login $ARGOCD_URL --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}
-            shell: /usr/bin/bash -e {0}
+            if argocd login $ARGOCD_URL --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}; then
+            SUCCESS=true
+          else
+            ATTEMPT=$((ATTEMPT+1))
+            sleep 5  # Wait before retrying
+          fi
+          done
+          shell: /usr/bin/bash -e {0}
         env:
           ARGOCD_USERNAME: admin  # Replace with your ArgoCD admin username
           needs: Get ngrok URL
