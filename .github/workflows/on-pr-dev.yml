@@ -147,9 +147,9 @@ jobs:
           background: true
       
       - name: Get ngrok URL
-        id: ngrok
+        id: ngro
         run: |
-          sleep 5  # Wait for ngrok to start
+          sleep 5  
           echo "::set-output name=url::$(curl -s http://localhost:4040/api/tunnels | jq -r .tunnels[0].public_url)"
         shell: bash
       
