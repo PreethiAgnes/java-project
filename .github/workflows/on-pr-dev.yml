@@ -144,7 +144,7 @@ jobs:
       - name: Start ngrok
         run: |
           ngrok http 8080  # Replace 8080 with the port your ArgoCD server is running on
-        background: true
+          background: true
       
       - name: Get ngrok URL
         id: ngrok
@@ -158,7 +158,7 @@ jobs:
           argocd login ${{ steps.ngrok.outputs.url }} --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}
         env:
           ARGOCD_USERNAME: admin  # Replace with your ArgoCD admin username
-        needs: Get ngrok URL
+          needs: Get ngrok URL
       
 
       #- name: Log in to ArgoCD
