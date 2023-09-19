@@ -166,7 +166,13 @@ jobs:
       
       - name: Connect to ArgoCD
         run: |
-          argocd login ${{ steps.ngro.outputs.url }} --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}
+        
+          # Specify the desired port for ArgoCD (e.g., 8080)
+          ARGOCD_PORT=8080
+
+          # Combine ngrok URL with the specified port
+          ARGOCD_URL="${{ steps.ngrok.outputs.url }}:$ARGOCD_PORT"
+          argocd login $ARGOCD_URL --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}
           shell: /usr/bin/bash -e {0}
         env:
           ARGOCD_USERNAME: admin  # Replace with your ArgoCD admin username
