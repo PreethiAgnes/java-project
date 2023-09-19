@@ -141,17 +141,24 @@ jobs:
           chmod +x /usr/local/bin/argocd
         shell: bash
 
-      - name: Start ngrok
+      - name: Install Ngrok
         run: |
-          ngrok http 8080  # Replace 8080 with the port your ArgoCD server is running on
+          curl -o ngrok.zip https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+          unzip ngrok.zip
+          chmod +x ngrok
+          mv ngrok /usr/local/bin/
+          ngrok --version
   
       
+      - name: Start Ngrok
+        run: |
+          ngrok http 8080 &
+          
       - name: Get ngrok URL
         id: ngro
         run: |
-          sleep 5  
+          sleep 5  # Wait for ngrok to start
           echo "::set-output name=url::$(curl -s http://localhost:4040/api/tunnels | jq -r .tunnels[0].public_url)"
-        shell: bash
       
       - name: Connect to ArgoCD
         run: |
