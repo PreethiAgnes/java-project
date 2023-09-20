@@ -99,12 +99,14 @@ jobs:
        with:
            username: ${{ secrets.DOCKER_USERNAME }}
            password: ${{ secrets.DOCKER_TOKEN }}
-     - name: Build Container image
-       run: docker build -t ${{ secrets.DOCKER_REPO }}:latest .
-     - name: Publish Docker image
-       run: docker push ${{ secrets.DOCKER_REPO }}
- 
-      
+     - name: Build and push Docker image
+       uses: docker/build-push-action@v4
+       with:
+          context: .
+          push: true
+          tags: preethiagnes/app:${{ github.sha }}
+     
+       
   Deploy:
     needs: Docker_push
     runs-on: ubuntu-latest
@@ -112,102 +114,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Start Minikube
+      - name: Install yq
         run: |
-          minikube start
-          minikube tunnel &
-        continue-on-error: true
+          wget https://github.com/mikefarah/yq/releases/download/v4.13.2/yq_linux_amd64 -O /usr/bin/yq
+          chmod +x /usr/bin/yq
 
-      - name: Set up kubectl
-        uses: azure/k8s-set-context@v1
-        with:
-          kubeconfig: ${{ runner.workspace }}/kubeconfig.yaml
-
-      - name: Start ngrok
+      - name: Update Manifest
         run: |
-          ngrok http 80 &  # Expose port 80 to the internet
-        continue-on-error: true
-
-      - name: Get ngrok URL
-        id: ngrok
-        run: |
-          sleep 5  # Wait for ngrok to start
-          echo "::set-output name=url::$(curl -s http://localhost:4040/api/tunnels | jq -r .tunnels[0].public_url)"
-        shell: bash
-
-      - name: Install argocd CLI
-        run: |
-          curl -o /usr/local/bin/argocd -L https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-          chmod +x /usr/local/bin/argocd
-        shell: bash
-
-      - name: Install Ngrok
-        run: |
-          curl -o ngrok.zip https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
-          unzip ngrok.zip
-          chmod +x ngrok
-          mv ngrok /usr/local/bin/
-          ngrok --version
-  
-      
-      - name: Start Ngrok
-        run: |
-          ngrok http 8080 &
-          
-      - name: Get ngrok URL
-        id: ngro
-        run: |
-          sleep 5  # Wait for ngrok to start
-          echo "::set-output name=url::$(curl -s http://localhost:4040/api/tunnels | jq -r .tunnels[0].public_url)"
-
-      - name: Display ngrok URL
-        run: |
-          echo "ngrok URL: ${{ steps.ngro.outputs.url }}"
-      
-      - name: Connect to ArgoCD
-        run: |        
-          MAX_ATTEMPTS=3
-          ATTEMPT=1
-          SUCCESS=false
-
-          while [ $ATTEMPT -le $MAX_ATTEMPTS ] && [ "$SUCCESS" != "true" ]; do
-            echo "Attempt $ATTEMPT of $MAX_ATTEMPTS"
-          # Remove "http://" or "https://" from ngrok URL
-          NGROK_URL="${{ steps.ngro.outputs.url }}"
-          NGROK_URL=${NGROK_URL#http://}
-          NGROK_URL=${NGROK_URL#https://}
-
-           # Specify the desired port for ArgoCD (e.g., 8080)
-          ARGOCD_PORT=8080
-
-            # Combine ngrok URL with the specified port
-            ARGOCD_URL="${NGROK_URL}:$ARGOCD_PORT"
-            if argocd login $ARGOCD_URL --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}; then
-            SUCCESS=true
-          else
-            ATTEMPT=$((ATTEMPT+1))
-            sleep 5  # Wait before retrying
-          fi
-          done
-          shell: /usr/bin/bash -e {0}
+            # Replace image and tag in the manifest
+            sed -i 's|image:.*|image: preethiagnes/app:${{ github.sha }}|' kubernetes/deployment.yaml
+            
+            # Update the image and tag in the manifest
+            yq e -i '.spec.template.spec.containers[0].image |= "preethiagnes/app:" + env.GITHUB_SHA' kubernetes/deployment.yaml
         env:
-          ARGOCD_USERNAME: admin  # Replace with your ArgoCD admin username
-          needs: Get ngrok URL
-      
-
-      #- name: Log in to ArgoCD
-        #run: |
-          #argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password ${{ secrets.ARGOCD_PASSWORD }}
-        #env:
-          #ARGOCD_SERVER: localhost:8080  # Replace with your ArgoCD server URL
-          #ARGOCD_USERNAME: admin  # Replace with your ArgoCD admin username
-
-      - name: Update ArgoCD Application URL
+          GITHUB_SHA: ${{ github.sha }}
+        
+      - name: Commit and Push Changes
         run: |
-          kubectl apply -n argocd -f argo-cd.yaml
-          argocd app set my-app-name -p targetRevision=<DEPLOYMENT_URL>
-          argocd app sync my-app-name
-        env:
-          KUBECONFIG: ${{ runner.workspace }}/kubeconfig.yaml
-          DEPLOYMENT_URL: ${{ steps.ngrok.outputs.url }}
-  
+            git config --global user.name "Preethi agnes"
+            git config --global user.email "preethiagnest@gmail.com"
+            git add Kubernetes/deployment.yaml
+            git commit -m "Update image and tag to ${{ github.sha }}"
+            git push
