@@ -129,11 +129,18 @@ jobs:
         env:
             GITHUB_SHA: ${{ github.sha }}
         
-        
+      - name: Use PAT
+        run: |
+              # Access the PAT secret
+              PAT_TOKEN=$PAT_TOKEN
+              echo "Using PAT_TOKEN: $PAT_TOKEN"
+
       - name: Commit and Push Changes
         run: |
             git config --global user.name "PreethiAgnes"
             git config --global user.email "preethiagnest@gmail.com"
             git add ./kubernetes/deployment.yaml
             git commit -m "Update image and tag to ${{ github.sha }}"
-            git push
+            git push origin dev
+            env:
+              PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
