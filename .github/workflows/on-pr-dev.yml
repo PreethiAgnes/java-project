@@ -135,7 +135,7 @@ jobs:
               PAT_TOKEN=$PAT_TOKEN
               echo "Using PAT_TOKEN: $PAT_TOKEN"
 
-      - name: Commit and Push Changes
+      - name: Commit and Push Change
         run: |
             git config --global user.name "PreethiAgnes"
             git config --global user.email "preethiagnest@gmail.com"
