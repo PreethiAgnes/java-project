@@ -114,6 +114,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: List Files in Directory
+        run: |
+          ls -R ../kubernetes
+      
       - name: Install yq
         run: |
           sudo wget https://github.com/mikefarah/yq/releases/download/v4.13.2/yq_linux_amd64 -O /usr/bin/yq
