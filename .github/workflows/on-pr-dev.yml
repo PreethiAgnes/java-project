@@ -139,6 +139,7 @@ jobs:
         run: |
             git config --global user.name "PreethiAgnes"
             git config --global user.email "preethiagnest@gmail.com"
+            git remote add origin https://github.com/PreethiAgnes/java-project.git
             git add ./kubernetes/deployment.yaml
             git commit -m "Update image and tag to ${{ github.sha }}"
             git push origin dev
