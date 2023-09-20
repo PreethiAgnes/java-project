@@ -132,7 +132,7 @@ jobs:
         
       - name: Commit and Push Changes
         run: |
-            git config --global user.name "Preethi agnes"
+            git config --global user.name "PreethiAgnes"
             git config --global user.email "preethiagnest@gmail.com"
             git add ./kubernetes/deployment.yaml
             git commit -m "Update image and tag to ${{ github.sha }}"
