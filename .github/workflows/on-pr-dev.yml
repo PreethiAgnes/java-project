@@ -126,7 +126,7 @@ jobs:
             sed -i 's|image:.*|image: preethiagnes/app:${{ github.sha }}|' ./kubernetes/deployment.yaml
             
             # Update the image and tag in the manifest
-            yq eval -i '.spec.template.spec.containers[0].image = "preethiagnes/app:" + env.GITHUB_SHA' ./kubernetes/deployment.yaml
+            yq eval -i '.spec.template.spec.containers[0].image = "preethiagnes/app:" + input.GITHUB_SHA' ./kubernetes/deployment.yaml
         env:
           GITHUB_SHA: ${{ github.sha }}
         
