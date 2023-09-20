@@ -116,7 +116,7 @@ jobs:
 
       - name: List Files in Directory
         run: |
-          ls -R '../../kubernetes/'
+          ls -R 
       
       - name: Install yq
         run: |
