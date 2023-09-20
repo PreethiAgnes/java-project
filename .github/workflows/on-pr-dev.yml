@@ -122,13 +122,13 @@ jobs:
 
       - name: Update Manifest
         run: |
-            # Replace image and tag in the manifest
-            sed -i 's|image:.*|image: preethiagnes/app:${{ github.sha }}|' ./kubernetes/deployment.yaml
-            
-            # Update the image and tag in the manifest
-            yq eval -i '.spec.template.spec.containers[0].image = "preethiagnes/app:" + env.GITHUB_SHA' ./kubernetes/deployment.yaml
+            # Replace image and tag in the manifest using jq and shell script
+            IMAGE="preethiagnes/app:${GITHUB_SHA}"
+            jq --arg image "$IMAGE" '.spec.template.spec.containers[0].image = $image' ./kubernetes/deployment.yaml > ./kubernetes/deployment.yaml
+            mv ./kubernetes/deployment.yaml ./kubernetes/deployment.yaml
         env:
-          GITHUB_SHA: ${{ github.sha }}
+            GITHUB_SHA: ${{ github.sha }}
+        
         
       - name: Commit and Push Changes
         run: |
