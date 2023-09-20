@@ -114,10 +114,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: List Files in Directory
-        run: |
-          ls -R 
-      
+   
       - name: Install yq
         run: |
           sudo wget https://github.com/mikefarah/yq/releases/download/v4.13.2/yq_linux_amd64 -O /usr/bin/yq
@@ -126,10 +123,10 @@ jobs:
       - name: Update Manifest
         run: |
             # Replace image and tag in the manifest
-            sed -i 's|image:.*|image: preethiagnes/app:${{ github.sha }}|' ../kubernetes/deployment.yaml
+            sed -i 's|image:.*|image: preethiagnes/app:${{ github.sha }}|' ./kubernetes/deployment.yaml
             
             # Update the image and tag in the manifest
-            yq eval -i '.spec.template.spec.containers[0].image = "preethiagnes/app:" + env.GITHUB_SHA' ../kubernetes/deployment.yaml
+            yq eval -i '.spec.template.spec.containers[0].image = "preethiagnes/app:" + env.GITHUB_SHA' ./kubernetes/deployment.yaml
         env:
           GITHUB_SHA: ${{ github.sha }}
         
