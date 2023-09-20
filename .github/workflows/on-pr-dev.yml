@@ -125,7 +125,7 @@ jobs:
             # Replace image and tag in the manifest using jq and shell script
             IMAGE="preethiagnes/app:${GITHUB_SHA}"
             jq --arg image "$IMAGE" '.spec.template.spec.containers[0].image = $image' ./kubernetes/deployment.yaml > ./kubernetes/deployment.yaml
-            mv ./kubernetes/deployment.yaml ./kubernetes/deployment.yaml
+            # mv ./kubernetes/deployment.yaml ./kubernetes/deployment.yaml
         env:
             GITHUB_SHA: ${{ github.sha }}
         
