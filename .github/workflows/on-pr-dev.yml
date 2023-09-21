@@ -103,6 +103,7 @@ jobs:
              echo "::set-output name=new_version::$new_version"  
              echo "$new_version" > .github/workflows/config/increment.txt 
              git tag -a "v$new_version" -m "Version $new_version"
+             git add .
              git commit -m "Update version to $new_version"
              git push origin --follow-tags
        env:
