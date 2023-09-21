@@ -57,12 +57,12 @@ jobs:
        run: mvn -B package --file pom.xml -DskipTests
      
        
-     - name: Upload to Artifact  
-       run: mkdir staging && cp target/*jar-with-dependencies.jar staging
-     - uses: actions/upload-artifact@v3
-       with:
-             name: Package
-             path: staging
+     #- name: Upload to Artifact  
+      # run: mkdir staging && cp target/*jar-with-dependencies.jar staging
+     #- uses: actions/upload-artifact@v3
+      # with:
+            # name: Package
+            # path: staging
      #- name: Nexus Repo Publish
       # uses: sonatype-nexus-community/nexus-repo-github-action@master
        #with:
@@ -129,7 +129,7 @@ jobs:
 
      - name: Set NEW_VERSION input
        run: echo "NEW_VERSION=${{ env.NEW_VERSION }}" >> $GITHUB_ENV
-       
+
      - name: Build and push Docker image
        uses: docker/build-push-action@v4
        with:
