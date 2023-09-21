@@ -96,6 +96,7 @@ jobs:
        run: |
              # Increment the version number, e.g., using Semantic Versioning
              # Replace this with your versioning logic
+             chmod +x .github/workflows/config/increment.sh
              current_version=$(cat .github/workflows/config/increment.txt)
              new_version=$(.github/workflows/config/increment.sh "$version")
      
