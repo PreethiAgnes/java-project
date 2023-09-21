@@ -126,12 +126,16 @@ jobs:
        with:
            username: ${{ secrets.DOCKER_USERNAME }}
            password: ${{ secrets.DOCKER_TOKEN }}
+
+     - name: Set NEW_VERSION input
+       run: echo "NEW_VERSION=${{ env.NEW_VERSION }}" >> $GITHUB_ENV
+       
      - name: Build and push Docker image
        uses: docker/build-push-action@v4
        with:
           context: .
           push: true
-          tags: preethiagnes/app:env.NEW_VERSION
+          tags: preethiagnes/app:${{ env.NEW_VERSION }}
      
        
   Deploy:
