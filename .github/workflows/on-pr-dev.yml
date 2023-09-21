@@ -96,7 +96,7 @@ jobs:
        run: |
              # Increment the version number, e.g., using Semantic Versioning
              # Replace this with your versioning logic
-             current_version=$(cat config/version.txt)
+             current_version=$(cat ./config/version.txt)
              new_version=$(./increment_version.sh "$version")
      
              git tag -a "v$new_version" -m "Version $new_version"
