@@ -97,7 +97,7 @@ jobs:
              # Increment the version number, e.g., using Semantic Versioning
              # Replace this with your versioning logic
              current_version=$(cat .github/workflows/config/increment.txt)
-             new_version=$(./increment.sh "$version")
+             new_version=$(.github/workflows/config/increment.sh "$version")
      
              git tag -a "v$new_version" -m "Version $new_version"
              git push origin --tags
