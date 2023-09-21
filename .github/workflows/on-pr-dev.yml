@@ -107,6 +107,7 @@ jobs:
              git add .
              git commit -m "Update version to $new_version"
              git push origin --follow-tags
+             echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
        env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
  
@@ -120,12 +121,6 @@ jobs:
        with:
          ref: dev
 
-     - name: Get tag name
-       id: tag-name
-       run: |
-        new_version="${{ needs.Build_and_test.outputs.new_version }}"
-        echo "New version from Build_and_test job: $new_version"
-
      - name: Login to DockerHub
        uses: docker/login-action@v2
        with:
@@ -136,7 +131,7 @@ jobs:
        with:
           context: .
           push: true
-          tags: preethiagnes/app:${{ steps.tag-name.outputs.new_version }}
+          tags: preethiagnes/app:env.NEW_VERSION
      
        
   Deploy:
