@@ -136,7 +136,7 @@ jobs:
        with:
           context: .
           push: true
-          tags: preethiagnes/app:${{ needs.Build_and_test.outputs.new_version }}
+          tags: preethiagnes/app:${{ steps.tag-name.outputs.new_version }}
      
        
   Deploy:
