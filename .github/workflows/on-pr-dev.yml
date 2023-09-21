@@ -121,21 +121,25 @@ jobs:
        with:
          ref: dev
 
+     - name: Fetch latest tag
+       id: fetch-tag
+       run: |
+           latest_tag=$(git describe --tags --abbrev=0)
+           echo "Latest tag: $latest_tag"
+           echo "::set-output name=tag::$latest_tag"
+
      - name: Login to DockerHub
        uses: docker/login-action@v2
        with:
            username: ${{ secrets.DOCKER_USERNAME }}
            password: ${{ secrets.DOCKER_TOKEN }}
 
-     - name: Set NEW_VERSION input
-       run: echo "NEW_VERSION=${{ env.NEW_VERSION }}" >> $GITHUB_ENV
 
-     - name: Build and push Docker image
-       uses: docker/build-push-action@v4
-       with:
-          context: .
-          push: true
-          tags: preethiagnes/app:${{ env.NEW_VERSION }}
+     - name: Use latest tag as Docker image tag
+       run: |
+             latest_tag="${{ steps.fetch-tag.outputs.tag }}"
+             docker build -t preethiagnes/app:"$latest_tag" .
+             docker push preethiagnes/app:"$latest_tag"
      
        
   Deploy:
