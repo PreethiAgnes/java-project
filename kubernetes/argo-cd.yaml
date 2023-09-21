@@ -8,7 +8,7 @@ spec:
     server: https://kubernetes.default.svc
     namespace: argocd
   source:
-    repoURL: https://github.com/PreethiAgnes/java-project
+    repoURL: PreethiAgnes/java-project
     path: kubernetes
     targetRevision: dev
     # Specify the directory within your Git repo where Kubernetes manifests are stored.
