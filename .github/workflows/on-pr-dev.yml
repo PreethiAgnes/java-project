@@ -36,6 +36,7 @@ jobs:
      - name: Checkout
        uses: actions/checkout@v3
        with:
+         repository: PreethiAgnes/java-project
          ref: dev
          token: ${{secrets.PAT_TOKEN }}
      - name: Set up JDK 17
@@ -84,11 +85,8 @@ jobs:
        uses: actions/upload-artifact@v3
        with:
            name: sbom
-           path: target/bom.xml
+           path: target/bom.xml    
 
-     - name: Check out code
-       uses: actions/checkout@v2
-     
      - name: Set up Git
        run: |
              git config user.name "Your Name"
