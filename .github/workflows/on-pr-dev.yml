@@ -58,11 +58,11 @@ jobs:
      
        
      - name: Upload to Artifact  
-       run: mkdir stag && cp target/*jar-with-dependencies.jar stag
+       run: mkdir staging && cp target/*jar-with-dependencies.jar staging
      - uses: actions/upload-artifact@v3
        with:
              name: Package
-             path: stag
+             path: staging
      #- name: Nexus Repo Publish
       # uses: sonatype-nexus-community/nexus-repo-github-action@master
        #with:
