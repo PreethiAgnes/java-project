@@ -1,10 +1,10 @@
 {
   "bomFormat" : "CycloneDX",
   "specVersion" : "1.4",
-  "serialNumber" : "urn:uuid:146c20f7-5439-4977-a39c-ce4eb3bc0483",
+  "serialNumber" : "urn:uuid:4a127a9d-8518-41a0-860e-e01a63c02823",
   "version" : 1,
   "metadata" : {
-    "timestamp" : "2023-09-21T18:57:01Z",
+    "timestamp" : "2023-09-21T18:58:15Z",
     "tools" : [
       {
         "vendor" : "OWASP Foundation",
