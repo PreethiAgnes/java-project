@@ -123,7 +123,7 @@ jobs:
             # Get the value of github.sha (first 8 characters)
             GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c1-8)
             # Replace the image and tag in the manifest file
-            sed -i 's|image: preethiagnes/app:*|image: preethiagnes/app:$GITHUB_SHA_SHORT|' ./deployment.yaml
+            sed -i 's|image: preethiagnes/app:*|image: preethiagnes/app:$GITHUB_SHA_SHORT|' ./manifest/deployment.yaml
         env:
             GITHUB_SHA: ${{ github.sha }}
 
@@ -131,7 +131,7 @@ jobs:
         run: |
             git config --global user.name "PreethiAgnes"
             git config --global user.email "preethiagnest@gmail.com"
-            git add ./deployment.yaml
+            git add ./manifest/deployment.yaml
             git commit -m "Update image tag with github.sha"
             git push origin main   # Replace 'main' with the branch you want to push to
             env:
