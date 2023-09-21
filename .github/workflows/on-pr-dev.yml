@@ -83,6 +83,24 @@ jobs:
        with:
            name: sbom
            path: target/bom.xml
+
+           - name: Check out code
+           uses: actions/checkout@v2
+     
+         - name: Set up Git
+           run: |
+             git config user.name "Your Name"
+             git config user.email "your.email@example.com"
+     
+         - name: Create Version Tag
+           run: |
+             # Increment the version number, e.g., using Semantic Versioning
+             # Replace this with your versioning logic
+             version=$(cat version.txt)
+             new_version=$(./increment_version.sh "$version")
+     
+             git tag -a "v$new_version" -m "Version $new_version"
+             git push origin --tags
   
  
   Docker_push:
