@@ -121,10 +121,8 @@ jobs:
    
       - name: Modify Manifest
         run: |
-            # Get the value of github.sha (first 8 characters)
-            GITHUB_SHA_SHORT=$(echo $GITHUB_SHA | cut -c1-8)
             # Replace the image and tag in the manifest file
-            sed -i 's|image: preethiagnes/app:*|image: preethiagnes/app:$GITHUB_SHA_SHORT|' ./manifest/deployment.yaml
+            sed -i 's|image: preethiagnes/app:*|image: preethiagnes/app:${{ github.sha}} T|' ./manifest/deployment.yaml
 
       - name: Commit and Push Change
         run: |
