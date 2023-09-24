@@ -16,7 +16,7 @@ jobs:
           # Use the Jira REST API to fetch the status of the Jira issue
           # Replace with your Jira domain, issue key, and authentication
           # Example API request:
-          curl -u ${{ secrets.JIRA_USERNAME }}:${{ secrets.JIRA_API_TOKEN }} -X GET "https://preethi-agnest.atlassian.net/rest/api/2/issue/DEV-1"
+          curl -u ${{ secrets.JIRA_USERNAME }}:${{ secrets.JIRA_API_TOKEN }} -X GET "https://preethi-agnest.atlassian.net/jira/servicedesk/projects/DEV/queues/custom/1"
 
       - name: Validate Branch Names
         if: steps.check-jira-status.outputs.isInProgress == 'true'
