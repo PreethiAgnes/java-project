@@ -43,6 +43,46 @@ jobs:
        JIRA_DOMAIN="https://your-jira-domain.atlassian.net"
        curl -X GET "$JIRA_DOMAIN/rest/api/3/project/$PROJECT_KEY" -H "Authorization: Basic $JIRA_API_TOKEN"
 
+    - name: Get Issues from Jira Board
+      run: |
+         # Make a REST API request to Jira to retrieve a list of issues
+         issues=$(curl -s -X GET "$JIRA_DOMAIN/rest/api/3/board/YOUR_BOARD_ID/issue" -H "Authorization: Basic $JIRA_API_TOKEN")
+         echo "$issues" > jira_issues.json
+     
+    - name: Parse Jira Issue Details
+      run: |
+           # Parse JSON response and extract issue key and status
+           issue_keys=($(jq -r '.issues[].key' jira_issues.json))
+           issue_statuses=($(jq -r '.issues[].fields.status.name' jira_issues.json))
+      continue-on-error: true
+
+    - name: Check Issue Status
+      run: |
+        all_in_progress=true
+        for status in "${issue_statuses[@]}"; do
+          if [ "$status" != "In Progress" ]; then
+            all_in_progress=false
+            break
+          fi
+        done
+        if [ "$all_in_progress" = true ]; then
+          echo "All Jira issues are In Progress"
+        else
+          echo "Not all Jira issues are In Progress"
+        fi
+      continue-on-error: true
+
+    - name: Compare with Branch Name
+      run: |
+        branch_name="${GITHUB_REF#refs/heads/}"
+        for key in "${issue_keys[@]}"; do
+          if [[ "$branch_name" != *"$key"* ]]; then
+            echo "Branch name does not match Jira issue key: $key"
+            exit 1
+          fi
+        done
+      continue-on-error: true
+       
   
     - name: Check JIRA Issue Status
       run: |
