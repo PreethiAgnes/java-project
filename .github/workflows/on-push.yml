@@ -41,7 +41,7 @@ jobs:
               JIRA_PROJECT_KEY: DEV
               JIRA_ISSUE_KEY: DEV-1
       run: |
-              # Fetch the Jira issue status
+              # Fetch the Jira issue statu
               issue_status=$(curl -s -u $JIRA_USERNAME:$JIRA_API_TOKEN -X GET $JIRA_URL/rest/api/2/issue/$JIRA_ISSUE_KEY | jq -r '.fields.status.name')
               
               echo "Issue Status: $issue_status"
