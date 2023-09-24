@@ -18,3 +18,4 @@ new_version="$major.$minor.$new_patch"
 
 # Output the new version
 echo "$new_version"
+
