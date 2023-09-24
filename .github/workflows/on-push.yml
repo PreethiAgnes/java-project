@@ -24,7 +24,7 @@ jobs:
           JIRA_API_TOKEN="${{ secrets.JIRA_API_TOKEN }}"
           
           # Make a REST API request to Jira to retrieve a list of issues
-          issues=$(curl -s -X GET "$JIRA_DOMAIN/jira/servicedesk/projects/DEV/queues/custom/1" -H "Authorization: Basic $JIRA_API_TOKEN")
+          issue_status=$(curl -s -u $JIRA_USERNAME:$JIRA_API_TOKEN -X GET $JIRA_URL/rest/api/2/issue/$JIRA_ISSUE_KEY)
           echo "$issues" > jira_issues.json
 
     - name: Debug Jira Issue Status
