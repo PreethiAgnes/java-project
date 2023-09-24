@@ -45,7 +45,7 @@ jobs:
             issue_status=$(echo "$issue_details" | jq -r '.fields.status.name')
 
             # Check if the issue is in progress
-            if [ "$issue_status" != "In Progress" ]; then
+            if [ "$issue_status" != "Work in progress" ]; then
               echo "Error: Jira issue $issue_key is not in progress."
               exit 1
             fi
