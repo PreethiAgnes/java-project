@@ -1,57 +1,40 @@
-name: On Push hook
+name: Branch Naming Validation
 
 on:
   push:
     branches:
       - '*'
-      - '*/*'
-      - '**'
-      - '!prd'
-      - '!qa'
 
 jobs:
-  validate_branches:
+  branch-naming-validation:
     runs-on: ubuntu-latest
-
+    
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Check if Jira Issue is In Progress
+        id: check-jira-status
+        run: |
+          # Use the Jira REST API to fetch the status of the Jira issue
+          # Replace with your Jira domain, issue key, and authentication
+          # Example API request:
+          # curl -u ${{ secrets.JIRA_USERNAME }}:${{ secrets.JIRA_API_TOKEN }} -X GET "https://preethi-agnest.atlassian.net/rest/api/2/issue/DEV-1"
 
-    - name: Get Jira Issues
-      id: jira_issues
-      run: |
-          JIRA_DOMAIN="https://preethi-agnest.atlassian.net"
-          JIRA_API_TOKEN="${{ secrets.JIRA_API_TOKEN }}"
-          
-          # Make a REST API request to Jira to retrieve a list of issues
-          issue_status=$(curl -s -u $JIRA_USERNAME:$JIRA_API_TOKEN -X GET $JIRA_URL/rest/api/2/issue/$JIRA_ISSUE_KEY)
-          echo "$issues" > jira_issues.json
+      - name: Validate Branch Names
+        if: steps.check-jira-status.outputs.isInProgress == 'true'
+        run: |
+          # Define a regex pattern for branch names that include Jira issue keys
+          regex_pattern="^[A-Z]+-\d+-[a-z0-9-]+$"
 
-    - name: Debug Jira Issue Status
-      run: |
-            echo "Issue Key: $issue_key"
-            echo "Issue Status: $issue_status"
-        
-          
-    - name: Check Jira Ticket Status
-      env:
-              JIRA_URL: ${{ secrets.JIRA_URL }}
-              JIRA_USERNAME: ${{ secrets.JIRA_USERNAME }}
-              JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-              JIRA_PROJECT_KEY: DEV
-              JIRA_ISSUE_KEY: DEV-1
-      run: |
-              # Fetch the Jira issue statu
-              issue_status=$(curl -s -u $JIRA_USERNAME:$JIRA_API_TOKEN -X GET $JIRA_URL/rest/api/2/issue/$JIRA_ISSUE_KEY | jq -r '.fields.status.name')
-              
-              echo "Issue Status: $issue_status"
-              
-              # Check if the issue is in progress
-              if [ "$issue_status" == "In Progress" ]; then
-                echo "The Jira issue $JIRA_ISSUE_KEY is in progress."
-                # Perform actions specific to when the issue is in progress
-              else
-                echo "The Jira issue $JIRA_ISSUE_KEY is not in progress."
-                # Perform actions specific to when the issue is not in progress
-              fi
-          
+          # Iterate through branch names in the push
+          for branch in $(git log --format=%D -n 1 ${{ github.event.before }}..${{ github.event.after }} | grep -Eo 'refs/heads/[^,]+'); do
+            branch_name=$(basename $branch)
+            # Extract the issue key from the branch name
+            issue_key=$(echo $branch_name | awk -F'-' '{print $1}')
+
+            # Check if the issue key exists in the fetched Jira issue and if it's in progress
+            if [[ ! "$(jq --arg key "$issue_key" '.key == $key and .fields.status.name == "In Progress"' <<< "${{ steps.check-jira-status.outputs.result }}")" == "true" ]]; then
+              echo "Branch name '$branch_name' does not correspond to an issue in progress on the Jira board."
+              exit 1
+            fi
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
