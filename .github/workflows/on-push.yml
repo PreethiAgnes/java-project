@@ -32,7 +32,7 @@ jobs:
           JIRA_DOMAIN="https://preethi-agnest.atlassian.net"
           JIRA_API_TOKEN="${{ secrets.JIRA_API_TOKEN }}"
           
-          # Extract branch names from the repository
+          # Extract branch names from the reposito
           branches=$(git for-each-ref --format='%(refname:short)' refs/heads/)
           
           # Loop through the branches and validate them
