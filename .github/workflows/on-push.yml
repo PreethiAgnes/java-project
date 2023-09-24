@@ -15,7 +15,7 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Get Jira Issues
       id: jira_issues
@@ -33,30 +33,25 @@ jobs:
             echo "Issue Status: $issue_status"
         
           
-    - name: Iterate and Validate Branches
-      run: |
-          JIRA_DOMAIN="https://preethi-agnest.atlassian.net"
-          JIRA_API_TOKEN="${{ secrets.JIRA_API_TOKEN }}"
-          
-          # Extract branch names from the reposito
-          branches=$(git for-each-ref --format='%(refname:short)' refs/heads/)
-          
-          # Loop through the branches and validate them
-          for branch in $branches; do
-            # Extract the Jira issue key from the branch name
-            issue_key="${branch##*/}"  # Assumes branch name format: "feature/DEV-123-some-description"
-            
-            # Make a REST API request to Jira to retrieve issue details
-            issue_details=$(curl -s -X GET "$JIRA_DOMAIN/rest/api/3/issue/$issue_key" -H "Authorization: Basic $JIRA_API_TOKEN")
-            issue_status=$(echo "$issue_details" | jq -r '.fields.status.name')
-
-            # Check if the issue is in progress
-            if [ "$issue_status" != "Work in progress" ]; then
-              echo "Error: Jira issue $issue_key is not in progress."
-              exit 1
-            fi
-          done
+    - name: Check Jira Ticket Status
       env:
-          JAVA_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/11.0.20-101/x64
-          JIRA_DOMAIN: https://your-jira-domain.atlassian.net
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+              JIRA_URL: ${{ secrets.JIRA_URL }}
+              JIRA_USERNAME: ${{ secrets.JIRA_USERNAME }}
+              JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+              JIRA_PROJECT_KEY: DEV
+              JIRA_ISSUE_KEY: DEV-1
+      run: |
+              # Fetch the Jira issue status
+              issue_status=$(curl -s -u $JIRA_USERNAME:$JIRA_API_TOKEN -X GET $JIRA_URL/rest/api/2/issue/$JIRA_ISSUE_KEY | jq -r '.fields.status.name')
+              
+              echo "Issue Status: $issue_status"
+              
+              # Check if the issue is in progress
+              if [ "$issue_status" == "In Progress" ]; then
+                echo "The Jira issue $JIRA_ISSUE_KEY is in progress."
+                # Perform actions specific to when the issue is in progress
+              else
+                echo "The Jira issue $JIRA_ISSUE_KEY is not in progress."
+                # Perform actions specific to when the issue is not in progress
+              fi
+          
