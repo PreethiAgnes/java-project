@@ -19,7 +19,7 @@ jobs:
           curl -u ${{ secrets.JIRA_USERNAME }}:${{ secrets.JIRA_API_TOKEN }} -X GET "https://preethi-agnest.atlassian.net/jira/servicedesk/projects/DEV/queues/custom/1"
 
       - name: Validate Branch Names
-        if: steps.check-jira-status.outputs.isInProgress == 'true'
+        #if: steps.check-jira-status.outputs.isInProgress == 'true'
         run: |
           # Define a regex pattern for branch names that include Jira issue keys
           regex_pattern="^[A-Z]+-\d+-[a-z0-9-]+$"
