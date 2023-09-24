@@ -1,3 +1,22 @@
+name: On Push hook
+
+ 
+
+on:
+
+  push:
+
+    branches:
+
+      - '*'
+
+      - '*/*'
+
+      - '**'
+
+      - '!prd'
+
+      - '!qa'
 jobs:
   validate_branches:
     runs-on: ubuntu-latest
@@ -10,7 +29,7 @@ jobs:
       id: jira_issues
       run: |
           JIRA_DOMAIN="https://preethi-agnest.atlassian.net"
-          JIRA_API_TOKEN="${{ secrets.JIRA_API_TOKEN }}"
+          JIRA_API_TOKEN=${{ secrets.JIRA_API_TOKEN }}"
           
           # Make a REST API request to Jira to retrieve a list of issues
           issues=$(curl -s -X GET "$JIRA_DOMAIN/jira/servicedesk/projects/DEV/queues/custom/1" -H "Authorization: Basic $JIRA_API_TOKEN")
@@ -41,5 +60,5 @@ jobs:
           done
        env:
           JAVA_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/11.0.20-101/x64
-          JIRA_DOMAIN: https://preethi-agnest.atlassian.net
+          JIRA_DOMAIN: https://your-jira-domain.atlassian.net
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
