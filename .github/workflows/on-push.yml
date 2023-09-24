@@ -21,6 +21,8 @@ jobs:
       - name: Validate Branch Names
         #if: steps.check-jira-status.outputs.isInProgress == 'true'
         run: |
+          git config --global user.name "PreethiAgnes"
+          git config --global user.email "preethiagnest@gmail.com"
           # Define a regex pattern for branch names that include Jira issue keys
           regex_pattern="^[A-Z]+-\d+-[a-z0-9-]+$"
 
