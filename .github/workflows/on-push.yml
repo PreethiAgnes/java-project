@@ -20,7 +20,7 @@ jobs:
 
       - name: Debug
         run: set -x
-        
+
       - name: Check if Jira Issue is In Progress
         id: check-jira-status
         run: |
@@ -30,8 +30,6 @@ jobs:
 
       - name: Check Branch Name and Jira Status
         run: |
-            # Navigate to the repository directory (if it's not the root directory)
-            cd $GITHUB_WORKSPACE
             
             # Get the current branch name
             branch_name=$(git branch --show-current 2>/dev/null)
