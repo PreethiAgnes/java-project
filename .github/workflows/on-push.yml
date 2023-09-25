@@ -10,6 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      - name: Navigate to Repository Root
+        run: cd $GITHUB_WORKSPACE
+      
       - name: Configure Git
         run: |
           git config --global user.name "PreethiAgnes"
