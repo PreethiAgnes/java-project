@@ -28,16 +28,29 @@ jobs:
           # Replace with your Jira domain, issue key, and authentication
           curl -u ${{ secrets.JIRA_USERNAME }}:${{ secrets.JIRA_API_TOKEN }} -X GET "https://preethi-agnest.atlassian.net/rest/api/2/issue/DEV-1"
 
-      - name: Check Branch Name and Jira Status
+      - name: Get the current branch name
         run: |
             # Get the current branch name
-            branch_name=$(git branch --show-current 2>/dev/null)
+            branch_name=$(git rev-parse --abbrev-ref HEAD)
             
             # Check if the branch name is empty or not found
             if [ -z "$branch_name" ]; then
               echo "Branch name not found. Exiting..."
               exit 1
             fi
+            
+            echo "Current branch is $branch_name"
+        shell: bash
+      - name: Check Branch Name and Jira Status
+        run: |
+            # Get the current branch name
+            #branch_name=$(git branch --show-current 2>/dev/null)
+            
+            # Check if the branch name is empty or not found
+            #if [ -z "$branch_name" ]; then
+              #echo "Branch name not found. Exiting..."
+              #exit 1
+            #fi
             
             echo "Current branch is $branch_name"
             
