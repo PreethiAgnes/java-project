@@ -30,7 +30,6 @@ jobs:
 
       - name: Check Branch Name and Jira Status
         run: |
-            
             # Get the current branch name
             branch_name=$(git branch --show-current 2>/dev/null)
             
@@ -49,12 +48,8 @@ jobs:
             if [[ ! "$(jq --arg key "$issue_key" '.key == $key and .fields.status.name == "In Progress"' <<< "")" == "true" ]]; then
               echo "Branch name '$branch_name' does not correspond to an issue in progress on the Jira board."
               exit 1
-            fi
+            }}
         env:
             GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             JIRA_USERNAME: ${{ secrets.JIRA_USERNAME }}
             JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-
-
-          
-        
