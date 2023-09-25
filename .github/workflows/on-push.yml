@@ -16,14 +16,27 @@ jobs:
           # Use the Jira REST API to fetch the status of the Jira issue
           # Replace with your Jira domain, issue key, and authentication
           curl -u ${{ secrets.JIRA_USERNAME }}:${{ secrets.JIRA_API_TOKEN }} -X GET "https://preethi-agnest.atlassian.net/rest/api/2/issue/DEV-1"
-      - name: Get Current Branch Name
+      - name: Check Branch Name and Jira Status
         run: |
-            branch_name=$(git branch --show-current)
+            # Navigate to the repository directory (if it's not the root directory)
+            cd $GITHUB_WORKSPACE
+            
+            # Get the current branch name
+            branch_name=$(git branch --show-current 2>/dev/null)
+            
+            # Check if the branch name is empty or not found
+            if [ -z "$branch_name" ]; then
+              echo "Branch name not found. Exiting..."
+              exit 1
+            fi
+            
             echo "Current branch is $branch_name"
+            
+            # Extract the issue key from the branch name
             issue_key=$(echo $branch_name | awk -F'-' '{print $1}')
-  
+            
             # Check if the issue key exists in the fetched Jira issue and if it's in progress
-            if [[ ! "$(jq --arg key "$issue_key" '.key == $key and .fields.status.name == "In Progress"' <<< "${{ steps.check-jira-status.outputs.result }}")" == "true" ]]; then
+            if [[ ! "$(jq --arg key "$issue_key" '.key == $key and .fields.status.name == "In Progress"' <<< "")" == "true" ]]; then
               echo "Branch name '$branch_name' does not correspond to an issue in progress on the Jira board."
               exit 1
             fi
@@ -31,3 +44,4 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             JIRA_USERNAME: ${{ secrets.JIRA_USERNAME }}
             JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        
