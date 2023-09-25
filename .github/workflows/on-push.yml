@@ -47,7 +47,7 @@ jobs:
             fi
             
             echo "Current branch is $branch_name"
-        shell: bash
+          shell: bash
       - name: Check Branch Name and Jira Status
         run: |
             # Get the current branch name
