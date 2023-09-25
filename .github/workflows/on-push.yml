@@ -10,12 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Configure Git
+        run: |
+          git config --global user.name "PreethiAgnes"
+          git config --global user.email "preethiagnest@gmail.com"
+
+      - name: Install jq
+        run: sudo apt-get install jq
+
       - name: Check if Jira Issue is In Progress
         id: check-jira-status
         run: |
           # Use the Jira REST API to fetch the status of the Jira issue
           # Replace with your Jira domain, issue key, and authentication
           curl -u ${{ secrets.JIRA_USERNAME }}:${{ secrets.JIRA_API_TOKEN }} -X GET "https://preethi-agnest.atlassian.net/rest/api/2/issue/DEV-1"
+
       - name: Check Branch Name and Jira Status
         run: |
             # Navigate to the repository directory (if it's not the root directory)
@@ -44,4 +53,8 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
             JIRA_USERNAME: ${{ secrets.JIRA_USERNAME }}
             JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+
+      - name: Debug
+        run: set -x
+          
         
