@@ -1,78 +1,215 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+name: Maven-poc 
+on:  
+ pull_request:
+   types: 
+     - closed 
 
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
- 
-name: Java CI with Maven test
-
-on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+ push: 
+   branches:
+      - feature
+      #- master
 
 jobs:
-  build:
+  Job-Starting-Notification:
+    uses: Hamritha02/shared-workflows/.github/workflows/notification.yml@main
+    with:
+      message: Job Started!
+    secrets:
+      TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
 
+  pre-push_hook:
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
+
     - name: Install Talisman
       run: |
           wget https://github.com/thoughtworks/talisman/releases/latest/download/talisman_linux_amd64 -O talisman
           chmod +x talisman
           sudo mv talisman /usr/local/bin/
 
- 
-
-    - name: Run Talisman Checks
+    - name: Run Talisman Check
       run: talisman --scan 
       continue-on-error: true
 
     - name: Upload Report
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
-          name: talisman-scan-report
+          name: "talisman-scan-report-${{ github.run_number }}"
           path: talisman_report/talisman_reports/data
-   
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        #cache: maven
-    
-    
-    - name: Build and test with Maven
-      run: mvn -B package --file pom.xml
-    - name: Build and analyze
-      env:
-         # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=poc-maven_maven
-    
-    - name: Unit Test
-      run: mvn -B package --file pom.xml -DskipTests
-      
-    - run: mkdir staging && cp target/*jar-with-dependencies.jar staging
-    
-    - uses: actions/upload-artifact@v1
-      with:
-            name: Package
-            path: staging
 
- 
+  Build_and_test:
+    needs: pre-push_hook
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+         token: ${{secrets.PAT_TOKEN }}
+            
+    - name: Build Maven
+      run: mvn -B package --file pom.xml
+      
+    #- name: Sonarcloud-code coverage
+      #env:
+         # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          #SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          
+      #run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=poc-maven_maven
+    #- name: Check SonarCloud Quality Gate Status
+      #run: |
+        #sonar_project_key='poc-maven_maven'
+        #sonar_quality_gate_status=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+        #"https://sonarcloud.io/api/qualitygates/project_status?projectKey=${sonar_project_key}")
+          #pass_percentage_threshold=100  # Define your desired threshold here
+
+        #if [[ $(echo "$sonar_quality_gate_status" | jq -r '.projectStatus.status') == "OK" ]]; then
+        #echo "Quality Gate Status: passed"
+        #else
+          #echo "Quality Gate Status: failed"
+          #exit 1
+        #fi
+      #env:
+        #SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    - name: Unit Test
+      run: mvn clean compile test
+      
+    - name: Build Test Maven
+      run: mvn -B package --file pom.xml -DskipTests   
+
+    - name: Calculate Test Pass Percentage
+      run: |
+        # Run the tests and store the results in a variable
+        test_results=$(mvn --batch-mode -Dmaven.test.failure.ignore=false test)
+
+        # Extract the relevant information from the test results
+        tests_run=$(echo "$test_results" | grep -oP 'Tests run: \K[0-9]+')
+        failures=$(echo "$test_results" | grep -oP 'Failures: \K[0-9]+')
+        errors=$(echo "$test_results" | grep -oP 'Errors: \K[0-9]+')
+
+        # Default values if the information is not available
+        tests_run=${tests_run:-0}
+        failures=${failures:-0}
+        errors=${errors:-0}
+
+        # Calculate the pass percentage
+        total_tests=$((tests_run - failures - errors))
+        pass_percentage=0
+        
+        if [ "$tests_run" -gt 0 ]; then
+          pass_percentage=$((total_tests * 100 / tests_run))
+        fi
+
+        # Print pass percentage
+        echo "Unit Test Pass Percentage: $pass_percentage%"
+
+        # Exit with non-zero status if there are test failures or errors
+        if [ "$failures" -gt 0 ] || [ "$errors" -gt 0 ]; then
+          exit 1
+        fi
+          
+    - name: Upload Artifact
+      run: mkdir staging && cp target/*jar-with-dependencies.jar staging
+    - uses: actions/upload-artifact@v3
+      with:
+          name: "artifact-${{ github.run_number }}"
+          path: staging
+    - name: "Get Xray Token"
+      id: xray-token
+      shell: bash
+      run: |
+        XRAY_TOKEN=$(curl -k -H "Content-Type: application/json" -X POST --data "{ \"client_id\": \"$CLIENT_ID\",\"client_secret\": \"$CLIENT_SECRET\" }" https://xray.cloud.getxray.app/api/v2/authenticate| tr -d '"')
+       
+         
+    - name: "Import results to Xray"
+      id: push-to-xray
+      shell: bash 
+      run: 'curl -H "Content-Type: text/xml" -X POST -H "Authorization: Bearer ${{ steps.xray-token.outputs.XRAY_TOKEN }}"  --data @"github-action-maven-example-start/target/surefire-reports/TEST-TestDeepThought.xml"  https://xray.cloud.getxray.app/api/v2/import/execution/xunit?projectKey=MV'
+      continue-on-error: true
+    #- uses: actions/upload-artifact@v3
+     # with:
+           # name: Package
+            #path: staging
+    #- name: Nexus Repo Publish
+     # uses: sonatype-nexus-community/nexus-repo-github-action@master
+      #with:
+       # serverUrl: https://annually-quality-seagull.ngrok-free.app
+        #username: admin
+        #password: ${{ secrets.password }}
+        #format: maven2
+        #repository: maven-GH
+        #coordinates: groupId=com.example artifactId=app version=1.0.0
+        #assets: extension=jar
+        #filename: target/*jar-with-dependencies.jar
+    
+   
+    - name: Generate SBOM
+      run: mvn org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom         
+     
+    - name: Upload SBOM report to artifact
+      uses: actions/upload-artifact@v3
+      with:
+          name: "sbom-${{ github.run_number }}"
+          path: target/bom.xml  
+   
+  Docker_push:
+    needs: Build_and_test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
     - name: Login to DockerHub
       uses: docker/login-action@v2
       with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
     - name: Build Container image
-      run: docker build -t ${{ secrets.DOCKER_REPO }}:latest .
+      run: docker build -t ${{ secrets.DOCKER_REPO }}:${{ github.run_number }} .
     - name: Publish Docker image
-      run: docker push ${{ secrets.DOCKER_REPO }}
+      run: docker push ${{ secrets.DOCKER_REPO }}:${{ github.run_number }}
+  Deploy:
+    needs: Docker_push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          repository: PreethiAgnes/Deployment   # Replace with the repository URL
+          ref: main 
+          token: ${{secrets.PAT_TOKEN }}
    
+      - name: Modify Manifest
+        run: |
+            # Replace the image and tag in the manifest file
+             echo "GitHub SHA: ${{ github.sha }}"
+             sed -i "s|preethiagnes/app:.*|preethiagnes/app:${{ github.run_number }}|" ./manifest/deployment.yaml
+
+      - name: Debug - Show Git Status After Changes
+        run: git status
+        shell: bash
+ 
+
+      - name: Commit and Push Change
+        run: |
+            git config --global user.name "PreethiAgnes"
+            git config --global user.email "preethiagnest@gmail.com"
+            git add ./manifest/deployment.yaml
+            git commit -m "Update image tag with github.sha"
+            git push origin main  
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+  #Job-Ending-Notification:
+
+    #needs: Deploy 
+    #uses: Hamritha02/shared-workflows/.github/workflows/notification.yml@main
+    #with:
+      #message: Job Completed Successfully!
+    #secrets:
+      #TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+
+    #secrets: inherit
+
